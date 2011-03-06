@@ -128,6 +128,7 @@ socket.on('connection', function(client){
                 rid = result[1];
                 r.sadd('joined-room:' + uid, rid);
                 cstatus = "JOINED"
+                r.hset(uid, 'status', cstatus);
                 client.send("OK " + cstatus + " " + rid);
 
                 // Process the messages
@@ -148,7 +149,8 @@ socket.on('connection', function(client){
     });
     client.on('disconnect', function() {
         if (cstatus == 'JOINED') {
-            r.publish("room:" + rid, "PART " + uid)
+            r.publish("room:" + rid, "PART " + uid);
+            r_pubsub.unsubscribe("room:" + rid);
         }
         console.log('socket.io: disconnect');
         r.decr("socketio-conn");
