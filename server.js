@@ -35,7 +35,10 @@ app.get('/', function(req, res){
     }
     res.render('base.jade', { variable: "Hell World!", uid: req.session.uid });
 });
-app.listen(3000);
+var port = 3000;
+if (process.env["NODE_PORT"])
+    port = process.env["NODE_PORT"];
+app.listen(port);
 
 
 // Socket.IO
