@@ -54,16 +54,16 @@ app.listen(port);
 var io = require('socket.io');
 var socket = io.listen(app);
 socket.on('connection', function(client){
-    var client = redis.createClient();
+    var r = redis.createClient();
     console.log('socket.io: connection');
-    client.incr("socketio-conn");
+    r.incr("socketio-conn");
 
     client.on('message', function(msg) {
-        console.log(msg);
+        console.log('message: ' + msg);
     });
     client.on('disconnect', function() {
         console.log('socket.io: disconnect');
-        client.decr("socketio-conn");
+        r.decr("socketio-conn");
     });
 });
 
