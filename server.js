@@ -5,7 +5,7 @@ var uuid = require("./uuid");
 
 function assert(exp, message) {
     if (!exp) {
-        console.log("Assertion Failed: " + message);
+        throw Error("Assertion Failed: " + message);
     }
 }
 
