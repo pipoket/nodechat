@@ -1,11 +1,11 @@
 #chatContainer {width:95%;margin:auto;}
-#chat {height:400px;padding:5px;border:1px solid #000}
+#chat {height:400px;padding:5px;border:1px solid #000;overflow-y:scroll;}
 #chat p {margin:0;padding:2px 0;}
 #chat p span {float:left;width:70px;padding-right:10px;margin-right:5px;text-align:right;font-weight:bold;background:#fdfbfb;}
 #chatControls {margin:10px 0;}
 #chatMsg {width:90%;margin:0;padding:0;}
 #chatSend {width:9%;float:right;}
-#log {clear:both;}
+#log {clear:both;height:200px;overflow-y:scroll;}
 #log p {margin:2px 0;}
 
 span.system {color:#ff4848}

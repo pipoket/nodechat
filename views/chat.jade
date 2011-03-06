@@ -7,6 +7,20 @@ h1 Chat Page
     #log
 script(type="text/javascript", src="/socket.io/socket.io.js")
 script(type="text/javascript")
+    function printLog(msg) {
+        $("#log").append(msg);
+        var logWin = document.getElementById("log");
+        var scrollHeight = Math.max(logWin.scrollHeight, logWin.clientHeight);
+        logWin.scrollTop = scrollHeight + 100;
+    }
+
+    function printChat(msg) {
+        $("#chat").append(msg);
+        var chatWin = document.getElementById("chat");
+        var scrollHeight = Math.max(chatWin.scrollHeight, chatWin.clientHeight);
+        chatWin.scrollTop = scrollHeight + 100;
+    }
+
     var STATES = {
             "CONNECTED": 0,
             "LOGGEDIN": 1,
@@ -18,21 +32,19 @@ script(type="text/javascript")
         conn: new io.Socket("serialx.net"),
         state: STATES.CONNECTED
     };
-    var logger = $("#log");
-    var chatWin = $("#chat");
 
     client.conn.connect();
 
     client.conn.on('connect', function() {
-        logger.append("<p>Connected</p>");
+        printLog("<p>Connected</p>");
         client.conn.send('UID ' + client.uid);
-        logger.append("<p>Sent UID: " + "#{uid}" + "</p>");
+        printLog("<p>Sent UID: " + "#{uid}" + "</p>");
     });
 
     client.conn.on('message', function(data) {
         var res, code, msg;
         var parsed = data.split(" ");
-        logger.append("<p>Message from server: " + data + "</p>");
+        printLog("<p>Message from server: " + data + "</p>");
 
         res = parsed[0];
         code = parsed[1];
@@ -43,37 +55,37 @@ script(type="text/javascript")
             case "OK":
                 switch(code) {
                     case "LOGGEDIN":
-                        logger.append("<p>Logged in!</p>");
+                        printLog("<p>Logged in!</p>");
                         client.state = STATES.LOGGEDIN;
                         client.conn.send('FIND');
-                        logger.append("<p>Requested room...</p>");
+                        printLog("<p>Requested room...</p>");
                         break;
                     case "JOINED":
-                        logger.append("<p>Roomcode received: " + msg + "</p>");
+                        printLog("<p>Roomcode received: " + msg + "</p>");
                         client.state = STATES.JOINED;
                         break;
                     case "MSG":
-                        chatWin.append('<p><span class="stranger">Stranger</span>' + msg + '</p>');
+                        printChat('<p><span class="stranger">Stranger</span>' + msg + '</p>');
                         break;
                     default:
-                        logger.append("<p>No code received from server</p>");
+                        printLog("<p>No code received from server</p>");
                         break;
                 }
                 break;
             case "ERROR":
-                logger.append("<p>Error received from server</p>");
+                printLog("<p>Error received from server</p>");
                 client.conn.disconnect();
                 client.state = STATES.DISCONNECTED;
                 break;
             default:
-                logger.append("<p>Unknown response received from server</p>");
+                printLog("<p>Unknown response received from server</p>");
                 client.conn.disconnect();
                 client.state = STATES.DISCONNECTED;
                 break;
         }
     });
     client.conn.on('disconnect', function() {
-        $("#log").append("<p>Disconnect</p>");
+        printLog("<p>Disconnect</p>");
         client.state = STATES.DISCONNECTED;
     });
 script(type="text/javascript")
@@ -82,20 +94,20 @@ script(type="text/javascript")
             if(event.which == "13") {
                 if(client.state == STATES.JOINED) {
                     client.conn.send("MSG " + $("#chatMsg").val());
-                    chatWin.append('<p><span class="you">You</span>' + $("#chatMsg").val() + '</p>');
+                    printChat('<p><span class="you">You</span>' + $("#chatMsg").val() + '</p>');
                     $(this).val("");
                 } else {
-                    chatWin.append('<p><span class="system">System</span>Finding your chat mate. Please wait!</p>');
+                    printChat('<p><span class="system">System</span>Finding your chat mate. Please wait!</p>');
                 }
             }
         });
         $("#chatSend").click(function(evt) {
             if(client.state == STATES.JOINED) {
                 client.conn.send("MSG " + $("#chatMsg").val());
-                chatWin.append('<p><span class="you">You</span>' + $("#chatMsg").val() + '</p>');
+                printChat('<p><span class="you">You</span>' + $("#chatMsg").val() + '</p>');
                 $(this).val("");
             } else {
-                chatWin.append('<p><span class="system">System</span>Finding your chat mate. Please wait!</p>');
+                printChat('<p><span class="system">System</span>Finding your chat mate. Please wait!</p>');
             }
         });
     });
