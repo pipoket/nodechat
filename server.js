@@ -60,6 +60,16 @@ socket.on('connection', function(client){
 
     client.on('message', function(msg) {
         console.log('message: ' + msg);
+        var pat_uuid = /UID ([a-f0-9\-]+)/;
+        var result = msg.match(pat_uuid);
+        if (result) {
+            var uid = result[1];
+            r.hget(uid, 'ip', function(err, ip) {
+                console.log('UID: ' + uid);
+                console.log('IP: ' + ip);
+                client.send("OK");
+            });
+        }
     });
     client.on('disconnect', function() {
         console.log('socket.io: disconnect');
