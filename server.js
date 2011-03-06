@@ -50,6 +50,24 @@ if (process.env["NODE_PORT"])
 app.listen(port);
 
 
+// Matching thread
+var timerId;
+var matchPartner = function() {
+    client = redis.createClient();
+    client.lpop('waitinglist', 0, function(uid1) {
+        client.lpop('waitinglist', 0, function(uid2) {
+            var rid = uuid.uuid();
+            client.rpush("rooms", rid);
+            client.incr("room-count");
+            client.publish("waiting:" + uid1, rid);
+            client.publish("waiting:" + uid2, rid);
+        });
+    });
+    timerId = setTimeout(matchPartner, 5000);
+}
+timerId = setTimeout(matchPartner, 5000);
+
+
 // Socket.IO
 var io = require('socket.io');
 var socket = io.listen(app);
@@ -88,6 +106,8 @@ socket.on('connection', function(client){
                 r.sadd('joined-room:' + uid, rid);
                 cstatus = "JOINED"
                 client.send("OK " + cstatus + " " + rid);
+
+                // Process the messages
                 r.on("message", function(channel, message) {
                     client.send("MSG " + message);
                 });
