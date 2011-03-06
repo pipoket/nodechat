@@ -4,4 +4,4 @@ Dependencies
 
 Running
 ================================
-    NODE_ENV=production node server.js
+    NODE_ENV=production NODE_PORT=80 node server.js
