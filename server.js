@@ -63,21 +63,16 @@ redis.createClient().flushdb();
 // Matching thread
 var timerId;
 var matchPartner = function() {
-    console.log("Matching function running.");
     client = redis.createClient();
     client.lpop('waitinglist', function(err, val) {
-        console.log('val: ' + val);
         if (!val) return;
         var uid1 = val;
-        console.log('uid1: ' + uid1);
         client.lpop('waitinglist', function(err, val) {
-            console.log('val2: ' + val);
             if (!val) {
                 client.lpush('waitinglist', uid1);
                 return;
             }
             var uid2 = val;
-            console.log('uid2: ' + uid2);
             var rid = uuid.uuid();
             client.rpush("rooms", rid);
             client.incr("room-count");
@@ -85,9 +80,9 @@ var matchPartner = function() {
             client.publish("waiting:" + uid2, "JOIN " + rid);
         });
     });
-    timerId = setTimeout(matchPartner, 5000);
+    timerId = setTimeout(matchPartner, 1000);
 }
-timerId = setTimeout(matchPartner, 5000);
+timerId = setTimeout(matchPartner, 1000);
 
 
 // Socket.IO
