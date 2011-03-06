@@ -51,6 +51,7 @@ app.get('/chat', function(req, res) {
 });
 
 
+var MAX_MSG_LEN = 100;
 var port = 3000;
 if (process.env["NODE_PORT"])
     port = process.env["NODE_PORT"];
@@ -143,6 +144,9 @@ socket.on('connection', function(client){
         else if (cstatus == 'JOINED' && (result = msg.match(/MSG (.+)/))) {
             // Send a message in the joined room
             var message = result[1];
+            if (message.length > MAX_MSG_LEN) {
+                message = message.substr(0, MAX_MSG_LEN);
+            }
             console.log('MSG: ' + message);
             r.publish("room:" + rid, "MSG " + uid + " " + message);
         }
