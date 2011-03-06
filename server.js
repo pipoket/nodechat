@@ -1,6 +1,7 @@
 var express = require('express');
 var app = express.createServer();
 var redis = require('redis');
+var uuid = require("./uuid");
 
 // Configuration
 app.configure(function(){
@@ -27,7 +28,6 @@ app.configure('production', function(){
 // Express
 app.get('/', function(req, res) {
     var client = redis.createClient();
-    var uuid = require("./uuid");
     if (!req.session.uid) {
         req.session.uid = uuid.uuid();
         console.log("IP: " + req.connection.address().address);
@@ -55,20 +55,51 @@ var io = require('socket.io');
 var socket = io.listen(app);
 socket.on('connection', function(client){
     var r = redis.createClient();
+    var cstatus = 'CONNECTED';  // Client Status
+    var uid;  // User ID
+    var rid;  // Room ID
     console.log('socket.io: connection');
     r.incr("socketio-conn");
 
     client.on('message', function(msg) {
         console.log('message: ' + msg);
-        var pat_uuid = /UID ([a-f0-9\-]+)/;
-        var result = msg.match(pat_uuid);
-        if (result) {
-            var uid = result[1];
+        var result;
+        if (cstatus == 'CONNECTED' && (result = msg.match(/UID ([a-f0-9\-]+)/))) {
+            // Login
+            uid = result[1];
             r.hget(uid, 'ip', function(err, ip) {
                 console.log('UID: ' + uid);
                 console.log('IP: ' + ip);
-                client.send("OK");
+                cstatus = 'LOGGEDIN';
+                r.hset(uid, 'status', cstatus);
+                client.send("OK " + cstatus);
             });
+        }
+        else if (cstatus == 'LOGGEDIN' && (result = msg.match(/FIND/))) {
+            // Find a partner
+            // Add myself to the waiting list
+            r.rpush('waitinglist', uid);
+            r.on("message", function(channel, message) {
+                assert(channel == "waiting:" + uid);
+                result = message.match(/JOIN ([a-f0-9\-]+)/);
+                assert(result);
+                r.unsubscribe("waiting:" + uid);
+                rid = result[1];
+                r.sadd('joined-room:' + uid, rid);
+                cstatus = "JOINED"
+                client.send("OK " + cstatus + " " + rid);
+                r.on("message", function(channel, message) {
+                    client.send("MSG " + message);
+                });
+                r.subscribe("room:" + rid);
+            });
+            r.subscribe("waiting:" + uid);
+        }
+        else if (cstatus == 'JOINED' && (result = msg.match(/MSG ([a-z0-9\- ]+)/))) {
+            // Send a message in the joined room
+            var message = result[1];
+            console.log('MSG: ' + message);
+            r.publish("room:" + rid, message);
         }
     });
     client.on('disconnect', function() {
