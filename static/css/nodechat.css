@@ -1,3 +1,9 @@
+#indexContainer {margin:auto;width:95%;margin-top:30px;text-align:center;}
+#indexContainer h1 {font-size:2em;}
+#indexContainer p {margin:80px 0;}
+a#bbb {display:block;width:250px;margin:auto;padding:20px 50px;color:#fff;background:#000;text-decoration:none;font-size:1.2em;}
+a#bbb:hover {background:#aaa;color:#000;}
+
 #chatContainer {width:95%;margin:auto;}
 #chat {height:400px;padding:5px;border:1px solid #000;overflow-y:scroll;}
 #chat p {margin:0;padding:2px 0;}
@@ -11,3 +17,6 @@
 span.system {color:#ff4848}
 span.you {color:#5757FF}
 span.stranger {color:#800080}
+
+/* helper classes */
+.center {text-align:center;}
