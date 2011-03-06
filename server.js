@@ -44,6 +44,7 @@ app.get('/', function(req, res) {
 
 app.get('/chat', function(req, res) {
     if (!req.session.uid) {
+        res.redirect('back');
     } else {
         res.render('chat.jade', { uid: req.session.uid });
     }
