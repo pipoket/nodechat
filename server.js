@@ -25,7 +25,7 @@ app.configure('production', function(){
 
 
 // Express
-app.get('/', function(req, res){
+app.get('/', function(req, res) {
     var client = redis.createClient();
     var uuid = require("./uuid");
     if (!req.session.uid) {
@@ -33,8 +33,17 @@ app.get('/', function(req, res){
         console.log("IP: " + req.connection.address().address);
         client.hset(req.session.uid, 'ip', req.connection.address().address);
     }
-    res.render('base.jade', { variable: "Hell World!", uid: req.session.uid });
+    res.render('index.jade', { variable: "Hell World!", uid: req.session.uid });
 });
+
+app.get('/chat', function(req, res) {
+    if (!req.session.uid) {
+    } else {
+        res.render('chat.jade', { uid: req.session.uid });
+    }
+});
+
+
 var port = 3000;
 if (process.env["NODE_PORT"])
     port = process.env["NODE_PORT"];

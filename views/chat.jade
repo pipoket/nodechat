@@ -1,0 +1,17 @@
+h1 Chat Page
+#log
+script(type="text/javascript", src="/socket.io/socket.io.js")
+script(type="text/javascript")
+    var socket = new io.Socket("serialx.net");
+    socket.connect();
+    socket.on('connect', function() {
+        $("#log").append("<p>Connected</p>");
+        socket.send("#{uid}");
+        $("#log").append("<p>Sent UUID: " + "#{uid}" + "</p>");
+    });
+    socket.on('message', function(data) {
+        $("#log").append("<p>Message from server: " + data + "</p>");
+    });
+    socket.on('disconnect', function() {
+        $("#log").append("<p>Disconnect</p>");
+    });
