@@ -140,7 +140,7 @@ socket.on('connection', function(client){
             });
             r_pubsub.subscribe("waiting:" + uid);
         }
-        else if (cstatus == 'JOINED' && (result = msg.match(/MSG ([a-z0-9\- ]+)/))) {
+        else if (cstatus == 'JOINED' && (result = msg.match(/MSG (.+)/))) {
             // Send a message in the joined room
             var message = result[1];
             console.log('MSG: ' + message);
