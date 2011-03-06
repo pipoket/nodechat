@@ -1,0 +1,8 @@
+#chatContainer {width:95%;margin:auto;}
+#chat {height:400px;padding:5px;border:1px solid #000}
+#chatControls {margin:10px 0;}
+#chatMsg {width:90%;margin:0;padding:0;}
+#chatSend {width:9%;float:right;}
+#log {clear:both;}
+#log p {margin:2px 0;}
+

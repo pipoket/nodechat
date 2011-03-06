@@ -1,5 +1,10 @@
 h1 Chat Page
-#log
+#chatContainer
+    #chat
+    #chatControls
+        input#chatMsg(type="text", name="chatMsg", value="")
+        input#chatSend(type="submit", value="Enter")
+    #log
 script(type="text/javascript", src="/socket.io/socket.io.js")
 script(type="text/javascript")
     var STATES = {
