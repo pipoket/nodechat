@@ -2,8 +2,8 @@ h1 Chat Page
 #chatContainer
     #chat
     #chatControls
-        input#chatMsg(type="text", name="chatMsg", value="")
-        input#chatSend(type="submit", value="Enter")
+        input#chatMsg(type="text", name="chatMsg", value="", disabled)
+        input#chatSend(type="submit", value="Enter", disabled)
     #log
 script(type="text/javascript", src="/socket.io/socket.io.js")
 script(type="text/javascript")
@@ -47,37 +47,55 @@ script(type="text/javascript")
         printLog("<p>Message from server: " + data + "</p>");
 
         res = parsed[0];
-        code = parsed[1];
-        msg = parsed[2];
+        msg1 = parsed[1];
+        msg2 = parsed[2];
 
         switch (res)
         {
-            case "OK":
-                switch(code) {
+            case "OK":  // Responses
+                switch(msg1) {
                     case "LOGGEDIN":
+                        // Connected to the server with valid uuid
                         printLog("<p>Logged in!</p>");
+                        printChat('<p><span class="system">System</span>Connected to chat server.</p>');
                         client.state = STATES.LOGGEDIN;
                         client.conn.send('FIND');
+                        printChat('<p><span class="system">System</span>Please be patient while we search for your chat mate...</p>');
                         printLog("<p>Requested room...</p>");
                         break;
                     case "JOINED":
-                        printLog("<p>Roomcode received: " + msg + "</p>");
+                        // Connected to the chat room
+                        printLog("<p>Roomcode received: " + msg1 + "</p>");
+                        printChat('<p><span class="system">System</span>Stranger enters the room. Have a nice chat!</p>');
                         client.state = STATES.JOINED;
-                        break;
-                    case "MSG":
-                        printChat('<p><span class="stranger">Stranger</span>' + msg + '</p>');
+                        $("#chatMsg,#chatSend").removeAttr("disabled");
+                        $("#chatMsg").focus();
                         break;
                     default:
+                        // Response-sink
                         printLog("<p>No code received from server</p>");
                         break;
                 }
                 break;
+            case "MSG":
+                // Chat message handling
+                if (msg1 == client.uid)
+                    printChat('<p><span class="you">You</span>' + msg2 + '</p>');
+                else
+                    printChat('<p><span class="stranger">Stranger</span>' + msg2 + '</p>');
+                break;
+            case "PART":
+                // Stranger leaves the room! So sad!
+                printChat('<p><span class="system">System</span>Stranger leaves the room.</p>');
+                client.conn.disconnect();
             case "ERROR":
+                // Error from server. Clean up all the connections.
                 printLog("<p>Error received from server</p>");
                 client.conn.disconnect();
                 client.state = STATES.DISCONNECTED;
                 break;
             default:
+                // Response-sink
                 printLog("<p>Unknown response received from server</p>");
                 client.conn.disconnect();
                 client.state = STATES.DISCONNECTED;
@@ -86,6 +104,8 @@ script(type="text/javascript")
     });
     client.conn.on('disconnect', function() {
         printLog("<p>Disconnect</p>");
+        printChat('<p><span class="system">System</span>Disconnected from chat server.</p>');
+        $("#chatMsg,#chatSend").attr({"disabled": "disabled"});
         client.state = STATES.DISCONNECTED;
     });
 script(type="text/javascript")
@@ -94,7 +114,7 @@ script(type="text/javascript")
             if(event.which == "13") {
                 if(client.state == STATES.JOINED) {
                     client.conn.send("MSG " + $("#chatMsg").val());
-                    printChat('<p><span class="you">You</span>' + $("#chatMsg").val() + '</p>');
+                    printLog("MSG " + $("#chatMsg").val());
                     $(this).val("");
                 } else {
                     printChat('<p><span class="system">System</span>Finding your chat mate. Please wait!</p>');
@@ -104,7 +124,7 @@ script(type="text/javascript")
         $("#chatSend").click(function(evt) {
             if(client.state == STATES.JOINED) {
                 client.conn.send("MSG " + $("#chatMsg").val());
-                printChat('<p><span class="you">You</span>' + $("#chatMsg").val() + '</p>');
+                printLog("MSG " + $("chatMsg").val());
                 $(this).val("");
             } else {
                 printChat('<p><span class="system">System</span>Finding your chat mate. Please wait!</p>');
