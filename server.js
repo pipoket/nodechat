@@ -138,7 +138,7 @@ socket.on('connection', function(client){
                 // Process the messages
                 r_pubsub = redis.createClient();
                 r_pubsub.on("message", function(channel, message) {
-                    client.send("MSG " + message);
+                    client.send("MSG " + uid + " " + message);
                 });
                 r_pubsub.subscribe("room:" + rid);
             });
