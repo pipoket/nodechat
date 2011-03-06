@@ -134,7 +134,7 @@ socket.on('connection', function(client){
                 // Process the messages
                 r_pubsub = redis.createClient();
                 r_pubsub.on("message", function(channel, message) {
-                    client.send("MSG " + message);
+                    client.send(message);
                 });
                 r_pubsub.subscribe("room:" + rid);
             });
@@ -144,7 +144,7 @@ socket.on('connection', function(client){
             // Send a message in the joined room
             var message = result[1];
             console.log('MSG: ' + message);
-            r.publish("room:" + rid, uid + " " + message);
+            r.publish("room:" + rid, "MSG " + uid + " " + message);
         }
     });
     client.on('disconnect', function() {
