@@ -154,9 +154,21 @@ socket.on('connection', function(client){
     });
     client.on('disconnect', function() {
         if (cstatus == 'JOINED') {
+            console.log("Removing " + uid + " from joined room");
+            r.srem('joined-room:' + uid, rid);
             r.publish("room:" + rid, "PART " + uid);
             r_pubsub.unsubscribe("room:" + rid);
         }
+        else if (cstatus == 'LOGGEDIN') {
+            if (r_pubsub) {
+                console.log("Removing " + uid + " from waiting list");
+                r.lrem('waitinglist', 0, uid, function(err) {
+                    console.log("Unsubscribing " + uid + " from pub/sub");
+                    r_pubsub.unsubscribe("waiting:" + uid);
+                });
+            }
+        }
+        r.hdel(uid, 'status');
         console.log('socket.io: disconnect');
         r.decr("socketio-conn");
     });
