@@ -19,6 +19,7 @@ script(type="text/javascript")
         state: STATES.CONNECTED
     };
     var logger = $("#log");
+    var chatWin = $("#chat");
 
     client.conn.connect();
 
@@ -49,6 +50,7 @@ script(type="text/javascript")
                         break;
                     case "JOINED":
                         logger.append("<p>Roomcode received: " + msg + "</p>");
+                        client.state = STATES.JOINED;
                         break;
                     default:
                         logger.append("<p>No code received from server</p>");
@@ -57,12 +59,37 @@ script(type="text/javascript")
                 break;
             case "ERROR":
                 logger.append("<p>Error received from server</p>");
+                client.conn.disconnect();
+                client.state = STATES.DISCONNECTED;
                 break;
             default:
                 logger.append("<p>Unknown response received from server</p>");
+                client.conn.disconnect();
+                client.state = STATES.DISCONNECTED;
                 break;
         }
     });
     client.conn.on('disconnect', function() {
         $("#log").append("<p>Disconnect</p>");
+    });
+script(type="text/javascript")
+    $(function() {
+        $("#chatMsg").keyup(function(evt) {
+            if(event.which == "13") {
+                if(client.state == STATES.JOINED) {
+                    client.conn.send("MSG " + $("#chatMsg").val());
+                    $(this).val("");
+                } else {
+                    chatWin.append('<p><span class="system">System</span>Finding your chat mate. Please wait!</p>');
+                }
+            }
+        });
+        $("#chatSend").click(function(evt) {
+            if(client.state == STATES.JOINED) {
+                client.conn.send("MSG " + $("#chatMsg").val());
+                $(this).val("");
+            } else {
+                chatWin.append('<p><span class="system">System</span>Finding your chat mate. Please wait!</p>');
+            }
+        });
     });
