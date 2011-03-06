@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express.createServer();
 var redis = require('redis');
-var uuid = require("./uuid");
+var util = require("./util");
 
 function assert(exp, message) {
     if (!exp) {
@@ -35,7 +35,7 @@ app.configure('production', function(){
 app.get('/', function(req, res) {
     var client = redis.createClient();
     if (!req.session.uid) {
-        req.session.uid = uuid.uuid();
+        req.session.uid = util.uuid();
         console.log("IP: " + req.connection.address().address);
         client.hset(req.session.uid, 'ip', req.connection.address().address);
     }
@@ -74,7 +74,7 @@ var matchPartner = function() {
                 return;
             }
             var uid2 = val;
-            var rid = uuid.uuid();
+            var rid = util.uuid();
             client.rpush("rooms", rid);
             client.incr("room-count");
             client.publish("waiting:" + uid1, "JOIN " + rid);
@@ -144,6 +144,7 @@ socket.on('connection', function(client){
         else if (cstatus == 'JOINED' && (result = msg.match(/MSG (.+)/))) {
             // Send a message in the joined room
             var message = result[1];
+            message = util.htmlEscape(message);
             if (message.length > MAX_MSG_LEN) {
                 message = message.substr(0, MAX_MSG_LEN);
             }
