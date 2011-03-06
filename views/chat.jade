@@ -52,6 +52,9 @@ script(type="text/javascript")
                         logger.append("<p>Roomcode received: " + msg + "</p>");
                         client.state = STATES.JOINED;
                         break;
+                    case "MSG":
+                        chatWin.append('<p><span class="stranger">Stranger</span>' + msg + '</p>');
+                        break;
                     default:
                         logger.append("<p>No code received from server</p>");
                         break;
@@ -78,6 +81,7 @@ script(type="text/javascript")
             if(event.which == "13") {
                 if(client.state == STATES.JOINED) {
                     client.conn.send("MSG " + $("#chatMsg").val());
+                    chatWin.append('<p><span class="you">You</span>' + $("#chatMsg").val() + '</p>');
                     $(this).val("");
                 } else {
                     chatWin.append('<p><span class="system">System</span>Finding your chat mate. Please wait!</p>');
@@ -87,6 +91,7 @@ script(type="text/javascript")
         $("#chatSend").click(function(evt) {
             if(client.state == STATES.JOINED) {
                 client.conn.send("MSG " + $("#chatMsg").val());
+                chatWin.append('<p><span class="you">You</span>' + $("#chatMsg").val() + '</p>');
                 $(this).val("");
             } else {
                 chatWin.append('<p><span class="system">System</span>Finding your chat mate. Please wait!</p>');
