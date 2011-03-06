@@ -62,9 +62,9 @@ redis.createClient().flushdb();
 
 
 // Matching thread
+client = redis.createClient();
 var timerId;
 var matchPartner = function() {
-    client = redis.createClient();
     client.lpop('waitinglist', function(err, val) {
         if (!val) return;
         var uid1 = val;
