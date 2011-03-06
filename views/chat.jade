@@ -2,17 +2,62 @@ h1 Chat Page
 #log
 script(type="text/javascript", src="/socket.io/socket.io.js")
 script(type="text/javascript")
-    var uid = '#{uid}';
-    var socket = new io.Socket("serialx.net");
-    socket.connect();
-    socket.on('connect', function() {
-        $("#log").append("<p>Connected</p>");
-        socket.send('UID ' + uid);
-        $("#log").append("<p>Sent UID: " + "#{uid}" + "</p>");
+    var STATES = {
+            "CONNECTED": 0,
+            "LOGGEDIN": 1,
+            "JOINED": 2,
+            "DISCONNECTED": 3
+    };
+    var client = {
+        uid: "#{uid}",
+        conn: new io.Socket("serialx.net"),
+        state: STATES.CONNECTED
+    };
+    var logger = $("#log");
+
+    client.conn.connect();
+
+    client.conn.on('connect', function() {
+        logger.append("<p>Connected</p>");
+        client.conn.send('UID ' + client.uid);
+        logger.append("<p>Sent UID: " + "#{uid}" + "</p>");
     });
-    socket.on('message', function(data) {
-        $("#log").append("<p>Message from server: " + data + "</p>");
+
+    client.conn.on('message', function(data) {
+        var res, code, msg;
+        var parsed = data.split(" ");
+        logger.append("<p>Message from server: " + data + "</p>");
+
+        res = parsed[0];
+        code = parsed[1];
+        msg = parsed[2];
+
+        switch (res)
+        {
+            case "OK":
+                switch(code) {
+                    case "LOGGEDIN":
+                        logger.append("<p>Logged in!</p>");
+                        client.state = STATES.LOGGEDIN;
+                        client.conn.send('FIND');
+                        logger.append("<p>Requested room...</p>");
+                        break;
+                    case "JOINED":
+                        logger.append("<p>Roomcode received: " + msg + "</p>");
+                        break;
+                    default:
+                        logger.append("<p>No code received from server</p>");
+                        break;
+                }
+                break;
+            case "ERROR":
+                logger.append("<p>Error received from server</p>");
+                break;
+            default:
+                logger.append("<p>Unknown response received from server</p>");
+                break;
+        }
     });
-    socket.on('disconnect', function() {
+    client.conn.on('disconnect', function() {
         $("#log").append("<p>Disconnect</p>");
     });
