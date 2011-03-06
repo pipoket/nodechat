@@ -74,6 +74,7 @@ script(type="text/javascript")
     });
     client.conn.on('disconnect', function() {
         $("#log").append("<p>Disconnect</p>");
+        client.state = STATES.DISCONNECTED;
     });
 script(type="text/javascript")
     $(function() {
