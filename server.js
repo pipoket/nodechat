@@ -6,6 +6,7 @@ app.configure(function(){
     app.use(express.methodOverride());
     app.use(express.bodyParser());
     app.use(app.router);
+    app.set("view options", {"layout": false});
 });
 
 app.configure('development', function(){
@@ -22,7 +23,7 @@ app.configure('production', function(){
 
 // Express
 app.get('/', function(req, res){
-    res.send('Hello World');
+    res.render('base.jade', {variable: "Hell World!"});
 });
 app.listen(3000);
 
