@@ -5,6 +5,9 @@ var app = express.createServer();
 app.configure(function(){
     app.use(express.methodOverride());
     app.use(express.bodyParser());
+    var RedisStore = require('connect-redis');
+    app.use(express.cookieParser());
+    app.use(express.session({ secret: "asldfkjasdlkfjaskl", store: new RedisStore }));
     app.use(app.router);
 });
 
@@ -22,7 +25,11 @@ app.configure('production', function(){
 
 // Express
 app.get('/', function(req, res){
-    res.render('base.jade', {variable: "Hell World!"});
+    var uuid = require("./uuid");
+    if (!req.session.uid) {
+        req.session.uid = uuid.uuid();
+    }
+    res.render('base.jade', { variable: "Hell World!", uid: req.session.uid });
 });
 app.listen(3000);
 
