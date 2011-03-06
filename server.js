@@ -10,7 +10,6 @@ app.configure(function(){
     app.use(express.cookieParser());
     app.use(express.session({ secret: "asldfkjasdlkfjaskl", store: new RedisStore }));
     app.use(app.router);
-    app.set("view options", {"layout": false});
 });
 
 app.configure('development', function(){
