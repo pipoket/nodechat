@@ -112,11 +112,11 @@ script(type="text/javascript")
 script(type="text/javascript")
     $(function() {
         $("#chatMsg").keyup(function(evt) {
-            if(event.which == "13") {
+            if(evt.which == "13") {
                 if(client.state == STATES.JOINED) {
                     client.conn.send("MSG " + $("#chatMsg").val());
                     printLog("MSG " + $("#chatMsg").val());
-                    $(this).val("");
+                    $("#chatMsg").val("").focus();
                 } else {
                     printChat('<p><span class="system">System</span>Finding your chat mate. Please wait!</p>');
                 }
@@ -125,8 +125,8 @@ script(type="text/javascript")
         $("#chatSend").click(function(evt) {
             if(client.state == STATES.JOINED) {
                 client.conn.send("MSG " + $("#chatMsg").val());
-                printLog("MSG " + $("chatMsg").val());
-                $(this).val("");
+                printLog("MSG " + $("#chatMsg").val());
+                $("#chatMsg").val("").focus();
             } else {
                 printChat('<p><span class="system">System</span>Finding your chat mate. Please wait!</p>');
             }
