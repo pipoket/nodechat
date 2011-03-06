@@ -3,6 +3,12 @@ var app = express.createServer();
 var redis = require('redis');
 var uuid = require("./uuid");
 
+function assert(exp, message) {
+    if (!exp) {
+        console.log("Assertion Failed: " + message);
+    }
+}
+
 // Configuration
 app.configure(function(){
     app.use(express.methodOverride());
@@ -50,17 +56,32 @@ if (process.env["NODE_PORT"])
 app.listen(port);
 
 
+redis.createClient().flushdb();
+
+
 // Matching thread
 var timerId;
 var matchPartner = function() {
+    console.log("Matching function running.");
     client = redis.createClient();
-    client.lpop('waitinglist', 0, function(uid1) {
-        client.lpop('waitinglist', 0, function(uid2) {
+    client.lpop('waitinglist', function(err, val) {
+        console.log('val: ' + val);
+        if (!val) return;
+        var uid1 = val;
+        console.log('uid1: ' + uid1);
+        client.lpop('waitinglist', function(err, val) {
+            console.log('val2: ' + val);
+            if (!val) {
+                client.lpush('waitinglist', uid1);
+                return;
+            }
+            var uid2 = val;
+            console.log('uid2: ' + uid2);
             var rid = uuid.uuid();
             client.rpush("rooms", rid);
             client.incr("room-count");
-            client.publish("waiting:" + uid1, rid);
-            client.publish("waiting:" + uid2, rid);
+            client.publish("waiting:" + uid1, "JOIN " + rid);
+            client.publish("waiting:" + uid2, "JOIN " + rid);
         });
     });
     timerId = setTimeout(matchPartner, 5000);
@@ -73,6 +94,10 @@ var io = require('socket.io');
 var socket = io.listen(app);
 socket.on('connection', function(client){
     var r = redis.createClient();
+    var r_pubsub;
+    r.on("error", function(err) {
+        console.log(err);
+    });
     var cstatus = 'CONNECTED';  // Client Status
     var uid;  // User ID
     var rid;  // Room ID
@@ -97,29 +122,31 @@ socket.on('connection', function(client){
             // Find a partner
             // Add myself to the waiting list
             r.rpush('waitinglist', uid);
-            r.on("message", function(channel, message) {
-                assert(channel == "waiting:" + uid);
+            r_pubsub = redis.createClient();
+            r_pubsub.on("message", function(channel, message) {
+                console.log("Room found!");
+                assert(channel == "waiting:" + uid, "UID does not match");
                 result = message.match(/JOIN ([a-f0-9\-]+)/);
-                assert(result);
-                r.unsubscribe("waiting:" + uid);
+                assert(result, "Message is wrong");
+                r_pubsub.unsubscribe("waiting:" + uid);
                 rid = result[1];
                 r.sadd('joined-room:' + uid, rid);
                 cstatus = "JOINED"
                 client.send("OK " + cstatus + " " + rid);
 
                 // Process the messages
-                r.on("message", function(channel, message) {
+                r_pubsub.on("message", function(channel, message) {
                     client.send("MSG " + message);
                 });
-                r.subscribe("room:" + rid);
+                r_pubsub.subscribe("room:" + rid);
             });
-            r.subscribe("waiting:" + uid);
+            r_pubsub.subscribe("waiting:" + uid);
         }
         else if (cstatus == 'JOINED' && (result = msg.match(/MSG ([a-z0-9\- ]+)/))) {
             // Send a message in the joined room
             var message = result[1];
             console.log('MSG: ' + message);
-            r.publish("room:" + rid, message);
+            r_pubsub.publish("room:" + rid, message);
         }
     });
     client.on('disconnect', function() {
