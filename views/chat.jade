@@ -79,10 +79,11 @@ script(type="text/javascript")
                 break;
             case "MSG":
                 // Chat message handling
+                var message = data.substring(41);
                 if (msg1 == client.uid)
-                    printChat('<p><span class="you">You</span>' + msg2 + '</p>');
+                    printChat('<p><span class="you">You</span>' + message + '</p>');
                 else
-                    printChat('<p><span class="stranger">Stranger</span>' + msg2 + '</p>');
+                    printChat('<p><span class="stranger">Stranger</span>' + message + '</p>');
                 break;
             case "PART":
                 // Stranger leaves the room! So sad!
