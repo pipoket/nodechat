@@ -6,7 +6,6 @@ app.configure(function(){
     app.use(express.methodOverride());
     app.use(express.bodyParser());
     app.use(app.router);
-    app.set("view options", {"layout": false});
 });
 
 app.configure('development', function(){
