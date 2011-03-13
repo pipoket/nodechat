@@ -38,6 +38,7 @@ app.get('/', function(req, res) {
         req.session.uid = util.uuid();
         console.log("IP: " + req.connection.address().address);
         client.hset(req.session.uid, 'ip', req.connection.address().address);
+        client.quit();
     }
     res.render('index.jade', { variable: "Hell World!", uid: req.session.uid });
 });
